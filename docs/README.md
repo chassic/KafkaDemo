@@ -1,4 +1,4 @@
-## Kafka Demo
+Kafka Demo
 
 
 | 主要版本 | 更新时间       | 备注             |
