@@ -64,4 +64,4 @@
 
 ### 	术语理解图
 
-​		
+![image-20201112171442195](basic-concept.assets/image-20201112171442195.png)

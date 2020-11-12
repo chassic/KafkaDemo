@@ -1,28 +1,26 @@
 
 * [HOME](./)
-
+* [介绍](/basics/kafka-basic/basic-introduction.md)
 * 基础篇
 
-    * [消息系统](/basics/kafka-basic/basic-message-system.md)
+    * [消息系统](/basics/kafka-basic/basic-introduce.md)
     
     * [Kafka术语](/basics/kafka-basic/basic-concept.md)
-
+    
+    * [Kafka特点](basics/kafka-basic/basic-features.md)
 * 底层篇
             
      * Scala
 
-            
 * 进阶篇          
     * Kafka底层知识
-            
+      
     * 设计模式
 
-            
 * 高级篇
-            
-    * 新技术
-            
-            
+  * 流处理
+    
 * 扩展篇
-            
-    * 云商中间件
+  * 云商中间件
+    
+    * 文件系统
