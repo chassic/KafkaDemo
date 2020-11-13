@@ -1,4 +1,6 @@
+### kafka的架构图
 
+![img](basic-concept.assets/640)
 
 - ### 	Producer（生产者）
 

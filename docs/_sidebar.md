@@ -1,13 +1,15 @@
 
-* [HOME](./)
-* [介绍](/basics/kafka-basic/basic-introduction.md)
-* 基础篇
 
-    * [消息系统](/basics/kafka-basic/basic-introduce.md)
+* 基础篇
+    * [介绍](/basics/kafka-basic/basic-introduction.md)
+    
+    * [消息系统](/basics/kafka-basic/basic-message-system.md)
     
     * [Kafka术语](/basics/kafka-basic/basic-concept.md)
     
     * [Kafka特点](basics/kafka-basic/basic-features.md)
+    
+    * [kafka架构](basics/kafka-basic/basic-architecture.md)
     
     * [集群部署方案](basics/kafka-setup/basic-build.md)
     
@@ -28,3 +30,5 @@
   * 云商中间件
     
     * 文件系统
+    
+* [参考](basics/kafka-setup/basic-config.md)

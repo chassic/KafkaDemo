@@ -1,20 +1,28 @@
 ## Kafka特性
 
-### 怎样实现高可用？
-
-- 常见的做法是将不同的 Broker 分散运行在不同的机器上
-- 备份机制（Replication）
-- 重平衡（Rebalance）
-  因为由重平衡引发的消费者问题
-
-### 怎样实现伸缩性？
-
-- 分区（Partitioning）
-
-  类比 MongoDB 和 Elasticsearch 中的 Sharding、HBase 中的 Region
+- **高吞吐量**、低延迟：kafka每秒可以处理几十万条消息，它的延迟最低只有几毫秒；
+- **可扩展性**：kafka集群支持热扩展；
+- **持久性**、可靠性：消息被持久化到本地磁盘，并且支持数据备份防止丢失；
+- **容错性**：允许集群中的节点失败(若分区副本数量为n,则允许n-1个节点失败)；
+- **高并发**：单机可支持数千个客户端同时读写；
 
 
 
 #### 怎样实现吞吐量？
 
 - 消费者组（Consumer Group）
+  
+
+#### 怎样实现高可用？
+
+- 常见的做法是将不同的 Broker 分散运行在不同的机器上
+- 备份机制（Replication）
+- 重平衡（Rebalance）
+  因为由重平衡引发的消费者问题
+
+#### 怎样实现伸缩性？
+
+- 分区（Partitioning）
+
+  类比 MongoDB 和 Elasticsearch 中的 Sharding、HBase 中的 Region
+
