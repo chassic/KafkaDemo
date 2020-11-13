@@ -27,8 +27,5 @@
   * 流处理
     
 * 扩展篇
-  * 云商中间件
     
-    * 文件系统
-    
-* [参考](basics/kafka-setup/basic-config.md)
+* [参考](reference/doc-reference.md)
