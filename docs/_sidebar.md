@@ -1,5 +1,6 @@
 
 
+* [分享](/share/kafak-share.md)
 * 基础篇
     * [介绍](/basics/kafka-basic/basic-introduction.md)
     
@@ -17,15 +18,11 @@
 * 底层篇
             
      * Scala
-
 * 进阶篇          
     * Kafka底层知识
       
     * 设计模式
-
 * 高级篇
   * 流处理
-    
 * 扩展篇
-    
 * [参考](reference/doc-reference.md)
