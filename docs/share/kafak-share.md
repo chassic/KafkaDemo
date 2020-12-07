@@ -1,32 +1,30 @@
 分享主题：
 
-# Kafka介绍、实践、展望
+# Kafka介绍及实践
 
 ![image-20201112182505747](kafak-share.assets/image-20201112182505747.png)
 
-## 介绍
+# 介绍
 
-
-
-### 消息系统模式
-
-![image-20201112155417040](kafak-share.assets/image-20201112155417040.png)
-
-
-
-### Apache Kafka介绍
+## Apache Kafka介绍
 
 Apache Kafka是一种分布式的、基于发布/订阅的消息系统，由Scala语言编写而成。具备快速、可扩展、可持久化的特点为。
 
 
 
+![image-20201207143947745](kafak-share.assets/image-20201207143947745.png)
+
+
+
+## 消息系统模式
+
+![image-20201112155417040](kafak-share.assets/image-20201112155417040.png)
 
 
 
 
 
-
-#### Kafka术语
+### Kafka术语
 
 **Producer（生产者）**
 
@@ -46,15 +44,25 @@ Apache Kafka是一种分布式的、基于发布/订阅的消息系统，由Scal
  一个kafka集群包含一个或多个服务器，一台kafka服务器就是一个broker，用于保存producer发送的消息。一个broker可以容纳多个topic。 Broker 负责接收和处理客户端发送过来的请求，以及对消息进行持久化。 常见的做法是将不同的 Broker 分散运行在不同的机器上(高可用)
 ```
 
-备份机制（Replication）高可用Topic（主题）
+副本机制（Replication）-- 高可用Topic（主题）
 
 ```
  领导者副本，追随者副本
+ Kafka只提供数据冗余好处理，其它两点不实现。
+ 原因：领导者副本与追随者副本同步不及时，不能单调读（有时数据有时没有数据）与读入即可读
+ 
+ 所谓的副本机制（Replication）,也可以称之为备份机制，通常是指分布式系统在多台互联网的机器上保存相同的数据拷贝。副本机制有什么好处么？
+
+1. 提供数据冗余：即使系统部分组件失效，系统依然能够继续运转，因而增加了整体可用性以及数据持久性
+2. 提供高伸缩性：支持横向扩展，能够通过添加机器的方式来提升读的性能，进而提高读操作吞吐量
+3. 改善数据局部性：允许将数据放入与用户地理位置相近的地方，从而降低系统延时
 ```
 
+![image-20201207145529208](kafak-share.assets/image-20201207145529208.png)
+
+
+
 **Topic（主题）**消息类别
-
-
 
 Partition（分区）
 
@@ -76,13 +84,13 @@ Offset（消息位移）
 Replica（副本）
 Rebalance（重平衡）
 
-pull与push
+**pull与push机制**
 
 ![image-20201207024844054](kafak-share.assets/image-20201207024844054.png)
 
 
 
-整体理解
+#### 整体理解
 
 ![64](kafak-share.assets/64.jpg)
 
@@ -97,9 +105,11 @@ pull与push
 ![image-20201112182505747](kafak-share.assets/image-20201112182505747.png)
 
 ```
-   特点：只有最基础的组件，监控组件也需要第三方支持（Kafka manager）
+特点：
+- 只有最基础的组件，监控组件也需要第三方支持（Kafka manager）
 
-适合场景：仅需要一个消息引擎系统亦或是简单的流处理应用场景，同时需要对系统有较大把控度
+适合场景：
+- 仅需要一个消息引擎系统亦或是简单的流处理应用场景，同时需要对系统有较大把控度
 ```
 
 
@@ -110,14 +120,14 @@ pull与push
 
 ```
 特点：
-
 - Confluent Platform是大数据的ETL工具，基于Kafka
 - 免费版有 Schema 注册中心和 REST proxy 两大功能
 - Schema 注册中心 -- 管理 Kafka 消息格式以实现数据前向 / 后向兼容
 - REST proxy -- 开放 HTTP 接口的方式允许你通过网络访问 Kafka 的各种功能
 - 国内使用很少
 
-适合场景：只需要使用上面提供两个功能，又不想重新二次开发
+适合场景：
+- 只需要使用上面提供两个功能，又不想重新二次开发
 ```
 
 
@@ -127,12 +137,12 @@ pull与push
 ![cloudera-newco-logo](kafak-share.assets/cloudera-newco-logo.png)
 
 ```
-   特点：开源，功能齐全，与kafka代码同步慢。
+特点：
+- 开源，功能齐全，与kafka代码同步慢。
 
-适合场景： - 使用Cloudera整体方案的时候（小规模大数据方案）
-         - Cloudera是在Hadoop生态系统中，规模最大、知名度最高的公司
-
-
+适合场景： 
+- 使用Cloudera整体方案的时候（小规模大数据方案）
+- Cloudera是在Hadoop生态系统中，规模最大、知名度最高的公司
 ```
 
 
@@ -145,10 +155,11 @@ pull与push
 
 
 
-### 特点
+### Kafka特点
 
 - Kafka使用磁盘但高效地存储消息和查询消息。
-  - 顺序读写的方式访问磁盘
+  - **顺序读写的方式访问磁盘**
+  - HDD磁盘硬盘能提高速度，固态硬盘没有优势
 - Kafka支持批量读写消息，可压缩（占用更少网络、磁盘）
   - 生产者压缩
   - 消息者解压
@@ -160,22 +171,33 @@ pull与push
 
 
 
-### 应用场景
+## 应用场景
 
 - #### 消息中间件
 
-- #### 数据流转
+  - 异步通信（注册时的短信、邮件通知）
+  - 应用解耦（调用第三方）
+  - 流量削峰（秒杀系统）
 
-- #### 日志中心
+- #### 数据流转（可选流式处理）
+
+- #### 日志中心（用户活动跟踪，运营指标）
+
+  - 日志采集发送
+
+    ![image-20201207101007511](kafak-share.assets/image-20201207101007511.png)
 
   - 离线数据处理
-  - 实时数据处理（流式处理）
 
-- #### 用户活动跟踪
+  - 实时数据处理（可选流式处理）
 
-- #### 运营指标
+    Springcloud Alibaba +Vue+Mysql +Canal+Redi+Jenkins+Git+K8s+Docker+Emq 微服务大数据终端架构设计图
 
-- #### 数据同步工具
+    ![Image](kafak-share.assets/Image.png)
+
+  
+
+- #### **数据同步工具**
 
 - #### 分布式文件系统？
 
@@ -185,11 +207,17 @@ pull与push
 
 
 
-### 横向对比
+## 横向对比
+
+### 常用消息引擎比较
+
+![image-20201207155438121](kafak-share.assets/image-20201207155438121.png)
+
+![image-20201207155524108](kafak-share.assets/image-20201207155524108.png)
 
 
 
-#### MQTT与kafka对比分析
+### MQTT与kafka对比分析
 
 | #                                                            |                                                              |                                                              |      |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ---- |
@@ -206,9 +234,9 @@ pull与push
 
 
 
-## 实践
+# 实践
 
-### 集群部署方案
+## 集群部署方案
 
 #### 环境因素
 
@@ -275,6 +303,8 @@ pull与push
 
 
 
+## 一些实践策略
+
 ### 使用分区的实践
 
 1.确保有**足够的保留空间**。
@@ -320,13 +350,12 @@ pull与push
 
 ### brokers实践
 
-（ｔｏｄｏ）
-
-https://blog.newrelic.com/engineering/kafka-best-practices/
-
+1. 保证Leader分区的网络带宽
+2. 监控 brokers 的吞叶量（传输（TX）和接收（RX），磁盘空间与IO, CPU使用率）
 
 
-### **无消息丢失配置**
+
+## **无消息丢失配置**
 
 - producer 
   1. 不要使用 producer.send(msg)，而要使用 producer.send(msg, callback)。记住，一定要使用带有回调通知的 send 方法。
@@ -345,7 +374,7 @@ https://blog.newrelic.com/engineering/kafka-best-practices/
 
 
 
-### 重平衡问题
+## 重平衡问题
 
 Topic、producer、Consumer数量大重平衡代价大
 
@@ -361,7 +390,7 @@ Topic、producer、Consumer数量大重平衡代价大
 
 
 
-### [kafka如何防止key相同的消息并发消费](https://www.cnblogs.com/xsirfly/p/11545164.html)
+## [kafka如何防止key相同的消息并发消费](https://www.cnblogs.com/xsirfly/p/11545164.html)
 
 问题描述：
 
@@ -377,21 +406,32 @@ Topic、producer、Consumer数量大重平衡代价大
 
 
 
-### 第三工具
+## 最后建议
+
+1. 在线业务，低延时，高稳定 - RocketMQ
+2. 大数据（日志），流计算 - Kafka
 
 
 
-### 代码学习
 
 
 
-#### 零拷贝
+
+
+
+
+
+# 学习
+
+
+
+## 零拷贝
 
 ![image-20201207023254354](kafak-share.assets/image-20201207023254354.png)
 
 
 
-#### Kafka Producer send原理及重试机制浅析(retries/acks如何被使用的)
+## Kafka Producer send原理及重试机制浅析(retries/acks如何被使用的)
 
 （ｔｏｄｏ）
 
@@ -399,13 +439,33 @@ https://blog.csdn.net/lbh199466/article/details/102968695
 
 
 
-## 展望
+## 消息存储的演变
 
-Springcloud Alibaba +Vue+Mysql +Canal+Redi+Jenkins+Git+K8s+Docker+Emq 微服务大数据终端架构设计图
+![image-20201207100111831](kafak-share.assets/image-20201207100111831.png)
 
-![Image](kafak-share.assets/Image.png)
+## 大厂遇到的问题
+
+当使用 Kafka 达到一定规模需要考虑的问题
+
+| 问题描述                                                     | 解决方案                                                     |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 日常运维操作对业务不透明<br/>Topic生产、消费安全无管控、集群迁移对业务不透明 | 需要**新增 KafkaGateWay**（需要自行开发）                    |
+| Kafka运维友好性性与可观察性不足<br />社区Kafka-Manager能力缺失 | DiDi 一站式 Apache Kafka 集群指标监控与运维管控平台<br/>https://github.com/didi/Logi-KafkaManager |
+| 磁盘IO热点导致的集群生产消费雪崩，重平衡等问题               | **改造消息引擎**<br/>- LeaderAndISR 改成批量发送，提升均衡效率；<br/>- 关闭自动均衡，支持按Broker均衡<br/>- 创建分区时磁盘选择策略优化， Broker内多次磁盘分区的动态平滑迁移<br/>- 磁盘过载保护（正常优先副本同步；其它发问优先用户消费） |
+
+![image-20201207105932449](kafak-share.assets/image-20201207105932449.png)
 
 
 
+## 分享参考
 
+
+
+《胡夕-Kafka核心技术与实战》
+
+《Apache Kafka源码剖析》
+
+《张亮-万亿级消息队列Kafka在滴滴的实践.pdf》
+
+[《20 Best Practices for Working With Apache Kafka at Scale》](https://blog.newrelic.com/engineering/kafka-best-practices/)
 
