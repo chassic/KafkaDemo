@@ -1,7 +1,7 @@
 <div class="cover-main"><img width="180px" src="icon/icon.JPG">
 
 <h1 id="Kafka Demo">
-<a><span>Kafka Demo</span></a></h1>
+<a><span>Kafka 分享</span></a></h1>
 
 
 <span id="busuanzi_container_site_pv" style="display: inline;">
