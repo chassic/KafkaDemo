@@ -188,7 +188,7 @@ Rebalance（重平衡）
 
   - 离线数据处理
 
-  - 实时数据处理（可选流式处理）
+  - 实时数据处理（流式处理）
 
     Springcloud Alibaba +Vue+Mysql +Canal+Redi+Jenkins+Git+K8s+Docker+Emq 微服务大数据终端架构设计图
 
@@ -206,7 +206,7 @@ Rebalance（重平衡）
 
 
 
-## 横向对比
+## 对比
 
 ### 常用消息引擎比较
 
@@ -430,11 +430,11 @@ Topic、producer、Consumer数量大重平衡代价大
 
 
 
-# 学习
+# 学习代码
 
 
 
-学习Kafka服务器端代码
+## 准备Kafka代码
 
 - Scala - 运行在 Java 虚拟机上，并兼容现有的 Java 程序，可能直接调用java库，函数式编程。
 
@@ -476,7 +476,100 @@ Topic、producer、Consumer数量大重平衡代价大
 
 
 
-## 学习零拷贝
+## 为什么Kafka服务器端写入消息特别快？
+
+从入口开始找
+
+- kafka-2.6.0-src\core\src\main\scala\kafka\Kafka.scala
+
+  ```
+  kafkaServerStartable.startup()
+  ```
+
+- kafka-2.6.0-src\core\src\main\scala\kafka\server\KafkaServerStartable.scala
+
+  ```scala
+  def startup(): Unit = {
+    try server.startup() //这里
+    catch {
+      case _: Throwable =>
+        // KafkaServer.startup() calls shutdown() in case of exceptions, so we invoke `exit` to set the status code
+        fatal("Exiting Kafka.")
+        Exit.exit(1)
+    }
+  }
+  ```
+
+- kafka-2.6.0-src\core\src\main\scala\kafka\server\KafkaServer.scala
+
+  ```scala
+  /* start log manager */
+  logManager = LogManager(config, initialOfflineDirs, zkClient, brokerState, kafkaScheduler, time, brokerTopicStats, logDirFailureChannel)
+  logManager.startup()  //这里
+  ...
+  ```
+
+- kafka-2.6.0-src\core\src\main\scala\kafka\log\Log.scala
+
+- kafka-2.6.0-src\core\src\main\scala\kafka\log\LogSegment.scala
+
+![image-20201209233658115](kafak-share.assets/image-20201209233658115.png)
+
+
+
+kafka-2.6.0-src\clients\src\main\java\org\apache\kafka\common\record\FileRecords.java
+
+![image-20201209185456761](kafak-share.assets/image-20201209185456761.png)
+
+进 writeFullyTo
+
+![image-20201209185531574](kafak-share.assets/image-20201209185531574.png)
+
+
+
+使用 channel.write(buffer)写入, 回头看这个实现类
+
+![image-20201209234051315](kafak-share.assets/image-20201209234051315.png)
+
+
+
+再看 FileChannel 实现类
+
+![image-20201209235020107](kafak-share.assets/image-20201209235020107.png)
+
+jdk1.8.0_111\jre\lib\rt.jar!\java\io\FileInputStream.class
+
+![image-20201209235130394](kafak-share.assets/image-20201209235130394.png)
+
+
+
+jdk1.8.0_111\jre\lib\rt.jar!\sun\nio\ch\FileChannelImpl.class
+
+Oracle 没有把这部分代码开源，
+
+http://hg.openjdk.java.net/jdk8/jdk8/jdk/
+
+
+
+![image-20201210004853922](kafak-share.assets/image-20201210004853922.png)
+
+
+
+在FileChannelImpl.java 中 write方法，不是直接把文件写入磁盘，而是**直接利用操作系统的页缓存（PageCache）实现文件到物理内存的直接映射**，用户对内存的所有操作会被操作系统自动的刷新到磁盘上，极大地降低了IO使用率。（MMP = Memory Mapped Files也称为内存映射文件）
+
+
+
+![20200908211711408](kafak-share.assets/20200908211711408.jpg)
+
+
+
+
+
+
+
+
+
+## 为什么Kafka副本复制这么快 - 零拷贝
 
 ![image-20201207023254354](kafak-share.assets/image-20201207023254354.png)
 
@@ -507,9 +600,13 @@ public abstract long transferTo(long position, long count,
 
 
 
+这里也是用到 FileChannelImpl.java 直接调用系统本地方法，通过这个方法把系统缓存写网卡缓存 。
 
 
-## Kafka Producer send原理及重试机制浅析(retries/acks如何被使用的)
+
+
+
+## Kafka Producer 重试机制(retries/acks)
 
 kafka-2.6.0-src\examples\src\main\java\kafka\examples\Producer.java
 
@@ -558,9 +655,7 @@ acks 作为参数发送到broker![image-20201209183619364](kafak-share.assets/im
 
 
 
-## 消息存储的演变
-
-![image-20201207100111831](kafak-share.assets/image-20201207100111831.png)
+# 其它
 
 ## 大厂遇到的问题
 
@@ -570,7 +665,7 @@ acks 作为参数发送到broker![image-20201209183619364](kafak-share.assets/im
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | 日常运维操作对业务不透明<br/>Topic生产、消费安全无管控、集群迁移对业务不透明 | 需要**新增 KafkaGateWay**（需要自行开发）                    |
 | Kafka运维友好性性与可观察性不足<br />社区Kafka-Manager能力缺失 | DiDi 一站式 Apache Kafka 集群指标监控与运维管控平台<br/>https://github.com/didi/Logi-KafkaManager |
-| 磁盘IO热点导致的集群生产消费雪崩，重平衡等问题               | **改造消息引擎**<br/>- LeaderAndISR 改成批量发送，提升均衡效率；<br/>- 关闭自动均衡，支持按Broker均衡<br/>- 创建分区时磁盘选择策略优化， Broker内多次磁盘分区的动态平滑迁移<br/>- 磁盘过载保护（正常优先副本同步；其它发问优先用户消费） |
+| 磁盘IO热点导致的集群生产消费雪崩，重平衡等问题               | **改造消息引擎**<br/>- LeaderAndISR 改成批量发送，提升均衡效率；<br/>- 关闭自动均衡，支持按Broker均衡<br/>- 创建分区时磁盘选择策略优化， Broker内多次磁盘分区的动态平滑迁移<br/>- 磁盘过载保护（正常优先副本同步；其它有问题时优先用户消费） |
 
 ![image-20201207105932449](kafak-share.assets/image-20201207105932449.png)
 
@@ -589,8 +684,6 @@ acks 作为参数发送到broker![image-20201209183619364](kafak-share.assets/im
 
 
 《胡夕-Kafka核心技术与实战》
-
-《Apache Kafka源码剖析》
 
 《张亮-万亿级消息队列Kafka在滴滴的实践.pdf》
 
