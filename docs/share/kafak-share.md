@@ -1,4 +1,4 @@
-分享主题：
+*分享主题：*
 
 # Kafka介绍及实践
 
@@ -81,7 +81,6 @@ Consumer Offset （消费者位移）
 **Record（消息）**
 
 Offset（消息位移）
-Replica（副本）
 Rebalance（重平衡）
 
 **pull与push机制**
@@ -234,7 +233,15 @@ Rebalance（重平衡）
 
 
 
+
+
+
+
+
+
 # 实践
+
+
 
 ## 集群部署方案
 
@@ -427,17 +434,127 @@ Topic、producer、Consumer数量大重平衡代价大
 
 
 
-## 零拷贝
+学习Kafka服务器端代码
+
+- Scala - 运行在 Java 虚拟机上，并兼容现有的 Java 程序，可能直接调用java库，函数式编程。
+
+  - 安装
+
+  - idea安装插件
+
+  - 简单了解一下语法
+
+    ```
+    def sizeInBytes(segments: Iterable[LogSegment]): Long =
+        segments.map(_.size.toLong).sum
+    ```
+
+    ![image-20201209170702151](kafak-share.assets/image-20201209170702151.png)
+    
+
+- Gradle
+
+  - 安装
+  - idea配置
+
+- 下载代码及编译
+
+  - git clone https://github.com/apache/kafka.git
+  - gradle wrapper， gradle idea
+
+- zookeeper 
+
+  
+
+具体版本：
+
+- Oracle Java 8 
+- Gradle 6.6
+- Scala 2.13
+- IDEA + Scala 插件
+- zookeeper-3.6.2
+
+
+
+## 学习零拷贝
 
 ![image-20201207023254354](kafak-share.assets/image-20201207023254354.png)
 
 
 
+kafka-2.6.0-src\clients\src\main\java\org\apache\kafka\common\record\FileRecords.java
+
+![image-20201209150834524](kafak-share.assets/image-20201209150834524.png)
+
+
+
+java\nio\channels\FileChannel.class
+
+```
+ * @see java.io.FileInputStream#getChannel()
+ * @see java.io.FileOutputStream#getChannel()
+ * @see java.io.RandomAccessFile#getChannel()
+ 
+public abstract long transferTo(long position, long count,
+                                WritableByteChannel target)
+```
+
+
+
+实现类：jdk1.8.0_111\jre\lib\rt.jar!\sun\nio\ch\FileChannelImpl.class
+
+![image-20201209181337314](kafak-share.assets/image-20201209181337314.png)
+
+
+
+
+
 ## Kafka Producer send原理及重试机制浅析(retries/acks如何被使用的)
 
-（ｔｏｄｏ）
+kafka-2.6.0-src\examples\src\main\java\kafka\examples\Producer.java
 
-https://blog.csdn.net/lbh199466/article/details/102968695
+kafka-2.6.0-src\clients\src\main\java\org\apache\kafka\clients\producer\KafkaProducer.java
+
+```scala
+ private final RecordAccumulator accumulator; --客户端消息队列
+ ....
+/**
+ * Implementation of asynchronously send a record to a topic.
+ */
+private Future<RecordMetadata> doSend(ProducerRecord<K, V> record, Callback callback) {
+
+// producer callback will make sure to call both 'callback' and interceptor callback
+interceptCallback = new InterceptorCallback<>(callback, this.interceptors, tp);
+
+// 加到消息队列中
+result = accumulator.append(tp, timestamp, serializedKey,
+    serializedValue, headers, interceptCallback, remainingWaitMs, false, nowMs);
+...
+ if (result.batchIsFull || result.newBatchCreated) {
+                // 这里唤醒后台发送线程
+                this.sender.wakeup();
+            }
+```
+
+
+
+kafka-2.6.0-src\clients\src\main\java\org\apache\kafka\clients\producer\internals\Sender.java
+
+reties 作为执行回调后使用
+
+![image-20201209183938685](kafak-share.assets/image-20201209183938685.png)
+
+![image-20201209184143618](kafak-share.assets/image-20201209184143618.png)
+
+
+
+如果重试次数小于最大次数，则调整数据准备下一次尝试
+
+![image-20201209184325067](kafak-share.assets/image-20201209184325067.png)
+
+acks 作为参数发送到broker![image-20201209183619364](kafak-share.assets/image-20201209183619364.png)
+
+
 
 
 
@@ -456,6 +573,14 @@ https://blog.csdn.net/lbh199466/article/details/102968695
 | 磁盘IO热点导致的集群生产消费雪崩，重平衡等问题               | **改造消息引擎**<br/>- LeaderAndISR 改成批量发送，提升均衡效率；<br/>- 关闭自动均衡，支持按Broker均衡<br/>- 创建分区时磁盘选择策略优化， Broker内多次磁盘分区的动态平滑迁移<br/>- 磁盘过载保护（正常优先副本同步；其它发问优先用户消费） |
 
 ![image-20201207105932449](kafak-share.assets/image-20201207105932449.png)
+
+
+
+
+
+
+
+
 
 
 
