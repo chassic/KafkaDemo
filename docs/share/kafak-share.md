@@ -44,7 +44,7 @@ Apache Kafka是一种分布式的、基于发布/订阅的消息系统，由Scal
  一个kafka集群包含一个或多个服务器，一台kafka服务器就是一个broker，用于保存producer发送的消息。一个broker可以容纳多个topic。 Broker 负责接收和处理客户端发送过来的请求，以及对消息进行持久化。 常见的做法是将不同的 Broker 分散运行在不同的机器上(高可用)
 ```
 
-副本机制（Replication）-- 高可用Topic（主题）
+副本机制（Replication）-- 保证高可用Topic（主题）
 
 ```
  领导者副本，追随者副本
