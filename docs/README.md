@@ -9,6 +9,8 @@ Kafka Demo
 
 ### [进入分享](https://chassic.github.io/KafkaDemo/#/share/kafak-share)
 
-GitHub Pages 完整阅读：[进入](https://chassic.github.io/KafkaDemo/)
 
-<a href="#/menu?id=目录">开始阅读</a></p></div><div class="mask"></div></section>
+
+
+
+GtHub Pages 完整阅读：[进入](https://chassic.github.io/KafkaDemo/)
